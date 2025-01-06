@@ -76,7 +76,6 @@ class HelperFunctions:
             balances = transactions['balance']
             avg_balance = balances.mean()
             balance_std = balances.std()
-            # Assuming transactions are sorted by date
             ending_balance = transactions.sort_values('trans_date', ascending=True)['balance'].iloc[-1]
             return pd.Series({
                 'avg_balance': avg_balance,
@@ -114,16 +113,13 @@ class HelperFunctions:
             })
 
 
-    # Assuming 'transactions' has columns: trans_date, trans_amount, balance
     def tsfresh_features(self, transactions):
         if transactions.empty:
             return pd.Series()
 
-        # Ensure proper time series structure
         transactions = transactions.sort_values('trans_date')
         transactions['id'] = 0  # tsfresh needs a grouping ID
         
-        # Extract features for 'trans_amount' and 'balance'
         extracted_features = extract_features(
             transactions[['id', 'trans_date', 'trans_amount', 'balance']],
             column_id='id',
@@ -137,13 +133,10 @@ class HelperFunctions:
         # Filter transactions for the specified account
         account_data = trans_disp[trans_disp['account_id'] == account_id].copy()
 
-        # Ensure 'date' is datetime
         account_data['trans_date'] = pd.to_datetime(account_data['trans_date'], errors='coerce')
 
-        # Extract year and month
         account_data['year_month'] = account_data['trans_date'].dt.to_period('M')
 
-        # Aggregate monthly metrics: average balance and total amount
         monthly_stats = account_data.groupby('year_month').agg(
             avg_balance=('balance', 'mean'),
             total_amount=('trans_amount', 'sum')
@@ -162,7 +155,7 @@ class HelperFunctions:
         plt.tight_layout()
         plt.show()
 
-        # Plot Total Amount (Revenue) Over Time
+        # Plot Total Amount Over Time
         plt.figure(figsize=(15,5))
         plt.plot(monthly_stats['year_month'], monthly_stats['total_amount'], marker='o')
         plt.title(f'Monthly Total Amount for Account {account_id}')
@@ -315,12 +308,12 @@ class HelperFunctions:
         axes[0, 0].boxplot(transaction_counts['transaction_count'], patch_artist=True, boxprops=dict(facecolor='forestgreen', color='black'))
         axes[0, 0].set_title("Boxplot of Transaction Counts")
         axes[0, 0].set_ylabel("Number of Transactions")
-        axes[0, 0].set_xticks([])  # Entfernt die x-Achsenbeschriftung im Boxplot
+        axes[0, 0].set_xticks([]) 
         bars = axes[0, 1].bar(transaction_counts['transaction_type'], transaction_counts['transaction_count'], color='forestgreen')
         axes[0, 1].set_title("Barplot of Transaction Counts by Type")
         axes[0, 1].set_xlabel("Transaction Type")
         axes[0, 1].set_ylabel("Number of Transactions")
-        axes[0, 1].tick_params(axis='x', rotation=45)  # Rotiert die x-Achsenbeschriftungen, falls nötig
+        axes[0, 1].tick_params(axis='x', rotation=45)  
 
         for bar in bars:
             axes[0, 1].text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 1,
