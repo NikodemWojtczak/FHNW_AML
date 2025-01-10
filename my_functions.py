@@ -130,7 +130,7 @@ class HelperFunctions:
         return extracted_features.iloc[0]  # Return as Series for easy joining
     
     def plot_monthly_trends(self, trans_disp, account_id):
-        # Filter transactions for the specified account
+
         account_data = trans_disp[trans_disp['account_id'] == account_id].copy()
 
         account_data['trans_date'] = pd.to_datetime(account_data['trans_date'], errors='coerce')
@@ -142,26 +142,25 @@ class HelperFunctions:
             total_amount=('trans_amount', 'sum')
         ).reset_index()
 
-        # Convert Period to string for plotting
         monthly_stats['year_month'] = monthly_stats['year_month'].astype(str)
 
         # Plot Average Balance Over Time
         plt.figure(figsize=(15,5))
-        plt.plot(monthly_stats['year_month'], monthly_stats['avg_balance'], marker='o')
+        plt.plot(monthly_stats['year_month'], monthly_stats['avg_balance'], marker = 'o', color = 'forestgreen')
         plt.title(f'Monthly Average Balance for Account {account_id}')
         plt.xlabel('Year-Month')
         plt.ylabel('Average Balance')
-        plt.xticks(rotation=45)
+        plt.xticks(rotation = 45)
         plt.tight_layout()
         plt.show()
 
         # Plot Total Amount Over Time
         plt.figure(figsize=(15,5))
-        plt.plot(monthly_stats['year_month'], monthly_stats['total_amount'], marker='o')
+        plt.plot(monthly_stats['year_month'], monthly_stats['total_amount'], marker = 'o', color = 'forestgreen')
         plt.title(f'Monthly Total Amount for Account {account_id}')
         plt.xlabel('Year-Month')
         plt.ylabel('Total Amount')
-        plt.xticks(rotation=45)
+        plt.xticks(rotation = 45)
         plt.tight_layout()
         plt.show()
 
@@ -464,4 +463,30 @@ class HelperFunctions:
         plt.ylabel('True Positive Rate')
         plt.title('ROC Curves for Candidate Models')
         plt.legend(loc='lower right')
+        plt.show()
+
+
+    def plot_roc_curves_c(y_test, **pred_proba_vars):
+        """
+        Plot ROC curves for multiple models.
+
+        Parameters:
+        - y_test: True labels for the test dataset.
+        - pred_proba_vars: Keyword arguments where keys are model names and values are predicted probabilities.
+        """
+        plt.figure(figsize=(12, 10))
+
+        # Iterate over the predicted probabilities
+        for model_name, y_pred_proba in pred_proba_vars.items():
+            fpr, tpr, _ = roc_curve(y_test, y_pred_proba)
+            auc_value = auc(fpr, tpr)
+            plt.plot(fpr, tpr, label=f"{model_name} (AUC = {auc_value:.2f})")
+
+        # Plot settings
+        plt.plot([0, 1], [0, 1], 'k--', label='Random Guess')  # Diagonal line
+        plt.xlabel('False Positive Rate')
+        plt.ylabel('True Positive Rate')
+        plt.title('ROC Curves for Candidate Models')
+        plt.legend(loc='lower right')
+        plt.grid()
         plt.show()
